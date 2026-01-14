@@ -14,8 +14,8 @@ public class InitCommand implements Command {
 
     @Override
     public void execute(CommandContext context) {
-        try{
-            if(Files.exists(context.vaultPath())){
+        try {
+            if (Files.exists(context.vaultPath())) {
                 System.out.println("Cofre já existe");
                 return;
             }
@@ -26,8 +26,10 @@ public class InitCommand implements Command {
             System.out.println("Confirme a senha mestra: ");
             char[] p2 = context.scanner().nextLine().toCharArray();
 
-            if(!Arrays.equals(p1, p2)){
+            if (!Arrays.equals(p1, p2)) {
                 System.out.println("Senhas não conferem");
+                Arrays.fill(p1, '\0');
+                Arrays.fill(p2, '\0');
                 execute(context);
             }
 
@@ -37,7 +39,7 @@ public class InitCommand implements Command {
 
             Arrays.fill(p1, '\0');
             Arrays.fill(p2, '\0');
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Erro ao criar cofre: " + e.getMessage());
         }
 

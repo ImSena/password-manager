@@ -9,24 +9,37 @@ import javax.crypto.spec.SecretKeySpec;
 
 public final class KeyDerivationService {
 
-    private KeyDerivationService(){}
+    private KeyDerivationService() {
+    }
 
-    public static SecretKey deriveKey(char[] masterPassword, byte[] salt){
-        try{
+    public static SecretKey deriveKey(char[] masterPassword, byte[] salt) {
+        try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance(CryptoConfig.KDF_ALGORITHM);
 
             KeySpec spec = new PBEKeySpec(
-                masterPassword,
-                salt,
-                CryptoConfig.KDF_INTERATIONS,
-                CryptoConfig.KEY_LENGTH
-            );
+                    masterPassword,
+                    salt,
+                    CryptoConfig.KDF_INTERATIONS,
+                    CryptoConfig.KEY_LENGTH);
 
             SecretKey tmp = factory.generateSecret(spec);
 
             return new SecretKeySpec(tmp.getEncoded(), "AES");
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new RuntimeException("Erro ao derivar chave criptográfica");
+        }
+    }
+
+    public static DerivedKey derivedKeyForNewVault(char[] masterPassword) {
+        try {
+            byte[] salt = SecureRandomService
+                    .generateBytes(CryptoConfig.SALT_LENGTH);
+
+            SecretKey key = deriveKey(masterPassword, salt);
+
+            return new DerivedKey(key, salt);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao derivar chave criptográfica para o novo cofre", e);
         }
     }
 }

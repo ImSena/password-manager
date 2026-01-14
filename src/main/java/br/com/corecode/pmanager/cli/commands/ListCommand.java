@@ -6,8 +6,9 @@ import java.util.Arrays;
 import br.com.corecode.pmanager.cli.Command;
 import br.com.corecode.pmanager.cli.CommandContext;
 import br.com.corecode.pmanager.domain.Vault;
+import br.com.corecode.pmanager.session.VaultSession;
 
-public class ListCommand implements Command{
+public class ListCommand implements Command {
 
     @Override
     public String name() {
@@ -16,31 +17,26 @@ public class ListCommand implements Command{
 
     @Override
     public void execute(CommandContext context) {
-        try{
-            if(!Files.exists(context.vaultPath())){
-                System.out.println("Cofre não existe");
+        try {
+            VaultSession session = context.session();
+
+            if (!session.isUnlocked()) {
+                System.out.println("Cofre bloqueado. Execute 'unlock' primeiro.");
                 return;
             }
 
-            System.out.println("Senha mestra: ");
-
-            char[] master = context.scanner().nextLine().toCharArray();
-
-            Vault vault = context.repository().open(context.vaultPath(), master);
-
-            if(vault.isEmpty()){
+            if (session.getVault().isEmpty()) {
                 System.out.println("Cofre vazio.");
                 return;
             }
 
-            System.out.println("Credenciais salvas: ");
-            vault.list().forEach(entry -> 
-                System.out.println("- "+ entry.getId())
+            System.out.println("Credenciais salvas:");
+            
+            session.getVault().list().forEach(entry ->
+                System.out.println("- " + entry.getId())
             );
 
-            Arrays.fill(master, '\0');
-
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Erro ao listar credenciais: " + e.getMessage());
         }
     }

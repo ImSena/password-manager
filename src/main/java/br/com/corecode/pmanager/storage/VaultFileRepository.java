@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.com.corecode.pmanager.crypto.CryptoConfig;
 import br.com.corecode.pmanager.crypto.CryptoService;
+import br.com.corecode.pmanager.crypto.DerivedKey;
 import br.com.corecode.pmanager.crypto.KeyDerivationService;
 import br.com.corecode.pmanager.crypto.SecureRandomService;
 import br.com.corecode.pmanager.domain.Vault;
@@ -24,10 +25,11 @@ public class VaultFileRepository {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public void create(Path path, char[] masterPassword) {
-        save(path, new Vault(), masterPassword);
+        DerivedKey derived = KeyDerivationService.derivedKeyForNewVault(masterPassword);
+        save(path, new Vault(), derived.key(), derived.salt());
     }
 
-    public Vault open(Path path, char[] masterPassword) {
+    public VaultHandle open(Path path, char[] masterPassword) {
         try (DataInputStream in = new DataInputStream(Files.newInputStream(path))) {
 
             validateMagic(in);
@@ -48,22 +50,20 @@ public class VaultFileRepository {
             SecretKey key = KeyDerivationService.deriveKey(masterPassword, salt);
             byte[] plain = CryptoService.decrypt(cipher, key, iv);
 
-            return mapper.readValue(plain, Vault.class);
+            Vault vault =  mapper.readValue(plain, Vault.class);
+
+            return new VaultHandle(vault, key, salt);
 
         } catch (Exception e) {
             throw new RuntimeException("Erro ao abrir cofre", e);
         }
     }
 
-    public void save(Path path, Vault vault, char[] masterPassword) {
+    public void save(Path path, Vault vault, SecretKey key, byte[] salt) {
         try {
-
-            byte[] salt = SecureRandomService.generateBytes(CryptoConfig.SALT_LENGTH);
             byte[] iv = SecureRandomService.generateBytes(CryptoConfig.IV_LENGTH);
 
-            SecretKey key = KeyDerivationService.deriveKey(masterPassword, salt);
             byte[] plain = mapper.writeValueAsBytes(vault);
-
             byte[] cipher = CryptoService.encrypt(plain, key, iv);
 
             writeFile(path, salt, iv, cipher);

@@ -7,6 +7,7 @@ import br.com.corecode.pmanager.cli.Command;
 import br.com.corecode.pmanager.cli.CommandContext;
 import br.com.corecode.pmanager.domain.PasswordEntry;
 import br.com.corecode.pmanager.domain.Vault;
+import br.com.corecode.pmanager.session.VaultSession;
 
 public class RemoveCommand implements Command {
 
@@ -23,22 +24,18 @@ public class RemoveCommand implements Command {
                 return;
             }
 
-            if (!Files.exists(context.vaultPath())) {
-                System.out.println("Cofre não existe.");
+            VaultSession session = context.session();
+
+            if (!session.isUnlocked()) {
+                System.out.println("Cofre bloqueado. Execute 'unlock' primeiro.");
                 return;
             }
 
             String id = context.args()[1];
+            PasswordEntry entry = session.getVault().get(id);
 
-            System.out.print("Senha mestra: ");
-            char[] master = context.scanner().nextLine().toCharArray();
-
-            Vault vault = context.repository()
-                    .open(context.vaultPath(), master);
-
-            PasswordEntry entry = vault.get(id);
             if (entry == null) {
-                System.out.println("Credencial não encontrada: " + id);
+                System.out.println("Credencial não encontrada.");
                 return;
             }
 
@@ -50,14 +47,16 @@ public class RemoveCommand implements Command {
                 return;
             }
 
-            vault.remove(id);
+            session.getVault().remove(id);
 
-            context.repository()
-                    .save(context.vaultPath(), vault, master);
+            context.repository().save(
+                context.vaultPath(),
+                session.getVault(),
+                session.getKey(),
+                session.getSalt()
+            );
 
             System.out.println("Credencial removida com sucesso.");
-
-            Arrays.fill(master, '\0');
 
         } catch (Exception e) {
             System.out.println("Erro ao remover credencial: " + e.getMessage());

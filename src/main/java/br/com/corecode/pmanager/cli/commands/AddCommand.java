@@ -1,12 +1,11 @@
 package br.com.corecode.pmanager.cli.commands;
 
 import java.nio.file.Files;
-import java.util.Arrays;
 
 import br.com.corecode.pmanager.cli.Command;
 import br.com.corecode.pmanager.cli.CommandContext;
 import br.com.corecode.pmanager.domain.PasswordEntry;
-import br.com.corecode.pmanager.domain.Vault;
+import br.com.corecode.pmanager.session.VaultSession;
 
 public class AddCommand implements Command{
 
@@ -23,10 +22,12 @@ public class AddCommand implements Command{
                 return;
             }
 
-            System.out.println("Senha mestra: ");
-            char[] master = context.scanner().nextLine().toCharArray();
+            VaultSession session = context.session();
 
-            Vault vault = context.repository().open(context.vaultPath(), master);
+            if(!session.isUnlocked()){
+                System.out.println("Cofre bloqueado. Execute 'unlock' primeiro.");
+                return;
+            }
 
             System.out.println("ID: ");
             String id = context.scanner().nextLine();
@@ -40,13 +41,12 @@ public class AddCommand implements Command{
             System.out.println("Descrição (opcional): ");
             String description = context.scanner().nextLine();
 
-            vault.add(new PasswordEntry(id, user, password, description));
+            session.getVault().add(new PasswordEntry(id, user, password, description));
 
-            context.repository().save(context.vaultPath(), vault, master);
+
+            context.repository().save(context.vaultPath(), session.getVault(), session.getKey(), session.getSalt());
 
             System.out.println("Credencial adicionada com sucesso. ");
-
-            Arrays.fill(master, '\0');
 
         }catch(Exception e){
             System.out.println("Erro ao adicionar credencial: "+e.getMessage());
