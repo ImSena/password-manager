@@ -1,0 +1,7 @@
+{
+  "type": "java",
+  "name": "Run PManager",
+  "request": "launch",
+  "mainClass": "br.com.corecode.pmanager.Main",
+  "args": "init"
+}

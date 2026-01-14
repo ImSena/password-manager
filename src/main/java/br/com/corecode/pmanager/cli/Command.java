@@ -1,5 +1,6 @@
 package br.com.corecode.pmanager.cli;
 
-public class Command {
-
+public interface Command {
+    String name();
+    void execute(CommandContext context);
 }
