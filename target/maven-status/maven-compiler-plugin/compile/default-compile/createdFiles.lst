@@ -1,0 +1,5 @@
+br\com\corecode\pmanager\crypto\KeyDerivationService.class
+br\com\corecode\pmanager\crypto\CryptoConfig.class
+br\com\corecode\pmanager\cli\Main.class
+br\com\corecode\pmanager\crypto\CryptoService.class
+br\com\corecode\pmanager\crypto\SecureRandomService.class
