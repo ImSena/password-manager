@@ -19,7 +19,7 @@ public class Shell {
         System.out.println("Digite 'exit' para sair.\n");
 
         while(true){
-            System.out.println("pmanager> ");
+            System.out.print("pmanager> ");
             String line = scanner.nextLine().trim();
 
             if(line.isEmpty()){
