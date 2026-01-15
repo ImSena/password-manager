@@ -36,6 +36,14 @@ public class Vault {
         return entries;
     }
 
+    public void clear(){
+        for(PasswordEntry entry: entries.values()){
+            entry.clear();
+        }
+
+        entries.clear();
+    }
+
     @JsonIgnore
     public boolean isEmpty(){
         return entries.isEmpty();

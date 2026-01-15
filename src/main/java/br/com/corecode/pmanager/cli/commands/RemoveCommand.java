@@ -1,12 +1,8 @@
 package br.com.corecode.pmanager.cli.commands;
 
-import java.nio.file.Files;
-import java.util.Arrays;
-
 import br.com.corecode.pmanager.cli.Command;
 import br.com.corecode.pmanager.cli.CommandContext;
 import br.com.corecode.pmanager.domain.PasswordEntry;
-import br.com.corecode.pmanager.domain.Vault;
 import br.com.corecode.pmanager.session.VaultSession;
 
 public class RemoveCommand implements Command {
@@ -25,11 +21,6 @@ public class RemoveCommand implements Command {
             }
 
             VaultSession session = context.session();
-
-            if (!session.isUnlocked()) {
-                System.out.println("Cofre bloqueado. Execute 'unlock' primeiro.");
-                return;
-            }
 
             String id = context.args()[1];
             PasswordEntry entry = session.getVault().get(id);

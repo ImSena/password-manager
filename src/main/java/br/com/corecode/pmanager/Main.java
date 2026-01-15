@@ -11,7 +11,6 @@ import br.com.corecode.pmanager.cli.commands.GetCommand;
 import br.com.corecode.pmanager.cli.commands.InitCommand;
 import br.com.corecode.pmanager.cli.commands.ListCommand;
 import br.com.corecode.pmanager.cli.commands.RemoveCommand;
-import br.com.corecode.pmanager.cli.commands.UnlockCommand;
 import br.com.corecode.pmanager.session.VaultSession;
 import br.com.corecode.pmanager.storage.VaultFileRepository;
 
@@ -32,7 +31,6 @@ public class Main {
         dispatcher.register(new ListCommand());
         dispatcher.register(new GetCommand());
         dispatcher.register(new RemoveCommand());
-        dispatcher.register(new UnlockCommand());
 
         Shell shell = new Shell(dispatcher, context, scanner);
         shell.start();

@@ -1,13 +1,23 @@
 package br.com.corecode.pmanager.cli.commands;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.nio.file.Files;
+import java.util.Arrays;
+
+import javax.crypto.SecretKey;
 
 import br.com.corecode.pmanager.cli.Command;
 import br.com.corecode.pmanager.cli.CommandContext;
+import br.com.corecode.pmanager.cli.SecureInput;
+import br.com.corecode.pmanager.crypto.CryptoConfig;
+import br.com.corecode.pmanager.crypto.CryptoService;
+import br.com.corecode.pmanager.crypto.MemorySafeUtils;
+import br.com.corecode.pmanager.crypto.SecureRandomService;
 import br.com.corecode.pmanager.domain.PasswordEntry;
 import br.com.corecode.pmanager.session.VaultSession;
 
-public class AddCommand implements Command{
+public class AddCommand implements Command {
 
     @Override
     public String name() {
@@ -16,40 +26,72 @@ public class AddCommand implements Command{
 
     @Override
     public void execute(CommandContext context) {
-        try{
-            if(!Files.exists(context.vaultPath())){
+        char[] idChar = null;
+        char[] user = null;
+        char[] password = null;
+        char[] notes = null;
+
+        byte[] userBytes = null;
+        byte[] passBytes = null;
+        byte[] notesBytes = null;
+        byte[] plainPayload = null;
+        byte[] encryptedPayload = null;
+
+        try {
+            if (!Files.exists(context.vaultPath())) {
                 System.out.println("Cofre não existe. Execute 'init' primeiro");
                 return;
             }
 
             VaultSession session = context.session();
 
-            if(!session.isUnlocked()){
-                System.out.println("Cofre bloqueado. Execute 'unlock' primeiro.");
-                return;
-            }
+            idChar = SecureInput.readChars("ID: ");
+            String id = new String(idChar);
 
-            System.out.println("ID: ");
-            String id = context.scanner().nextLine();
+            user = SecureInput.readChars("Usuário: ");
+            password = SecureInput.readChars("Senha: ");
+            notes = SecureInput.readChars("Descrição (opcional): ");
 
-            System.out.println("Usuário: ");
-            String user = context.scanner().nextLine();
+            userBytes = MemorySafeUtils.toBytes(user);
+            passBytes = MemorySafeUtils.toBytes(password);
+            notesBytes = MemorySafeUtils.toBytes(notes);
 
-            System.out.println("Senha");
-            String password = context.scanner().nextLine();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
 
-            System.out.println("Descrição (opcional): ");
-            String description = context.scanner().nextLine();
+            dos.writeInt(userBytes.length);
+            dos.write(userBytes);
+            dos.writeInt(passBytes.length);
+            dos.write(passBytes);
+            dos.writeInt(notesBytes.length);
+            dos.write(notesBytes);
 
-            session.getVault().add(new PasswordEntry(id, user, password, description));
+            plainPayload = baos.toByteArray();
 
+            byte[] entryIv = SecureRandomService.generateBytes(CryptoConfig.IV_LENGTH);
+            SecretKey sessionKey = context.session().getKey();
+
+            encryptedPayload = CryptoService.encrypt(plainPayload, sessionKey, entryIv);
+
+            PasswordEntry entry = new PasswordEntry(id, encryptedPayload, entryIv);
+            context.session().getVault().add(entry);
 
             context.repository().save(context.vaultPath(), session.getVault(), session.getKey(), session.getSalt());
 
             System.out.println("Credencial adicionada com sucesso. ");
 
-        }catch(Exception e){
-            System.out.println("Erro ao adicionar credencial: "+e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Erro ao adicionar credencial: " + e.getMessage());
+        } finally {
+            if (idChar != null) Arrays.fill(idChar, '\0');
+            if (user != null) Arrays.fill(user, '\0');
+            if (password != null) Arrays.fill(password, '\0');
+            if (notes != null) Arrays.fill(notes, '\0');
+
+            if (userBytes != null) Arrays.fill(userBytes, (byte) 0);
+            if (passBytes != null) Arrays.fill(passBytes, (byte) 0);
+            if (notesBytes != null) Arrays.fill(notesBytes, (byte) 0);
+            if (plainPayload != null) Arrays.fill(plainPayload, (byte) 0);
         }
     }
 

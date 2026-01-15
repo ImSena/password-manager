@@ -31,6 +31,7 @@ public class InitCommand implements Command {
                 Arrays.fill(p1, '\0');
                 Arrays.fill(p2, '\0');
                 execute(context);
+                return;
             }
 
             context.repository().create(context.vaultPath(), p1);
@@ -44,4 +45,10 @@ public class InitCommand implements Command {
         }
 
     }
+
+    @Override
+    public boolean requiresAuth() {
+        return false;
+    }
+
 }

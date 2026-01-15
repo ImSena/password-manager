@@ -1,11 +1,7 @@
 package br.com.corecode.pmanager.cli.commands;
 
-import java.nio.file.Files;
-import java.util.Arrays;
-
 import br.com.corecode.pmanager.cli.Command;
 import br.com.corecode.pmanager.cli.CommandContext;
-import br.com.corecode.pmanager.domain.Vault;
 import br.com.corecode.pmanager.session.VaultSession;
 
 public class ListCommand implements Command {
@@ -19,11 +15,6 @@ public class ListCommand implements Command {
     public void execute(CommandContext context) {
         try {
             VaultSession session = context.session();
-
-            if (!session.isUnlocked()) {
-                System.out.println("Cofre bloqueado. Execute 'unlock' primeiro.");
-                return;
-            }
 
             if (session.getVault().isEmpty()) {
                 System.out.println("Cofre vazio.");
