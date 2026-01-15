@@ -36,7 +36,6 @@ public class AddCommand implements Command {
         byte[] notesBytes = null;
         byte[] plainPayload = null;
         byte[] encryptedPayload = null;
-
         try {
             if (!Files.exists(context.vaultPath())) {
                 System.out.println("Cofre não existe. Execute 'init' primeiro");
@@ -45,12 +44,40 @@ public class AddCommand implements Command {
 
             VaultSession session = context.session();
 
-            idChar = SecureInput.readChars("ID: ");
-            String id = new String(idChar);
+            String id;
 
-            user = SecureInput.readChars("Usuário: ");
-            password = SecureInput.readChars("Senha: ");
-            notes = SecureInput.readChars("Descrição (opcional): ");
+            while (true) {
+                System.out.println("\n Digite as credenciais \n");
+                idChar = SecureInput.readChars("ID: ");
+                id = new String(idChar);
+
+                user = SecureInput.readChars("Usuário: ");
+                password = SecureInput.readChars("Senha: ");
+                notes = SecureInput.readChars("Descrição (opcional): ");
+
+                System.out.print("As credenciais estão corretas? (s/n)");
+                String response;
+
+                try {
+                    response = context.scanner().nextLine();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
+                while (response.isEmpty()) {
+                    System.out.println("Entrada inválida");
+                    System.out.print("As credenciais estão corretas? (s/n)");
+                    try {
+                        response = context.scanner().nextLine();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                if(response.equalsIgnoreCase("s")){
+                    break;
+                }
+            }
 
             userBytes = MemorySafeUtils.toBytes(user);
             passBytes = MemorySafeUtils.toBytes(password);
@@ -83,15 +110,23 @@ public class AddCommand implements Command {
         } catch (Exception e) {
             System.out.println("Erro ao adicionar credencial: " + e.getMessage());
         } finally {
-            if (idChar != null) Arrays.fill(idChar, '\0');
-            if (user != null) Arrays.fill(user, '\0');
-            if (password != null) Arrays.fill(password, '\0');
-            if (notes != null) Arrays.fill(notes, '\0');
+            if (idChar != null)
+                Arrays.fill(idChar, '\0');
+            if (user != null)
+                Arrays.fill(user, '\0');
+            if (password != null)
+                Arrays.fill(password, '\0');
+            if (notes != null)
+                Arrays.fill(notes, '\0');
 
-            if (userBytes != null) Arrays.fill(userBytes, (byte) 0);
-            if (passBytes != null) Arrays.fill(passBytes, (byte) 0);
-            if (notesBytes != null) Arrays.fill(notesBytes, (byte) 0);
-            if (plainPayload != null) Arrays.fill(plainPayload, (byte) 0);
+            if (userBytes != null)
+                Arrays.fill(userBytes, (byte) 0);
+            if (passBytes != null)
+                Arrays.fill(passBytes, (byte) 0);
+            if (notesBytes != null)
+                Arrays.fill(notesBytes, (byte) 0);
+            if (plainPayload != null)
+                Arrays.fill(plainPayload, (byte) 0);
         }
     }
 
