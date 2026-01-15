@@ -13,4 +13,8 @@ public final class SecureRandomService {
         RANDOM.nextBytes(bytes);
         return bytes;
     }
+
+    public static int nextInt(int bound){
+        return RANDOM.nextInt(bound);
+    }
 }

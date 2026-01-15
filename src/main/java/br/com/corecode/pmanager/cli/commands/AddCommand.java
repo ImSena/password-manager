@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.IllegalFormatConversionException;
 
 import javax.crypto.SecretKey;
 
@@ -13,6 +14,7 @@ import br.com.corecode.pmanager.cli.SecureInput;
 import br.com.corecode.pmanager.crypto.CryptoConfig;
 import br.com.corecode.pmanager.crypto.CryptoService;
 import br.com.corecode.pmanager.crypto.MemorySafeUtils;
+import br.com.corecode.pmanager.crypto.PasswordGeneratorService;
 import br.com.corecode.pmanager.crypto.SecureRandomService;
 import br.com.corecode.pmanager.domain.PasswordEntry;
 import br.com.corecode.pmanager.session.VaultSession;
@@ -47,12 +49,65 @@ public class AddCommand implements Command {
             String id;
 
             while (true) {
+                if (password != null)
+                    Arrays.fill(password, '\0');
+                if (user != null)
+                    Arrays.fill(user, '\0');
+
                 System.out.println("\n Digite as credenciais \n");
+
                 idChar = SecureInput.readChars("ID: ");
                 id = new String(idChar);
 
                 user = SecureInput.readChars("Usuário: ");
-                password = SecureInput.readChars("Senha: ");
+
+                System.out.println("Dica: Digite '/g' para gerar uma senha forte. ");
+                char[] inputPass = SecureInput.readChars("Senha: ");
+
+                if (inputPass.length == 2 && inputPass[0] == '/' && inputPass[1] == 'g') {
+                    Arrays.fill(inputPass, '\0');
+                    while (true) {
+                        if (password != null)
+                            Arrays.fill(password, '\0');
+                        System.out.print("Tamanho da senha (5-40): ");
+                        int length = 0;
+                        try {
+                            String lenStr = context.scanner().nextLine().trim();
+                            length = Integer.parseInt(lenStr);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Digite apenas números.");
+                            continue;
+                        }
+
+                        if (length < 5 || length > 20) {
+                            System.out.println("Tamanho de senha inválido \n");
+                            continue;
+                        }
+
+                        password = PasswordGeneratorService.generate(length);
+
+                        System.out.print(">>> SENHA GERADA: ");
+                        for (char c : password)
+                            System.out.print(c);
+                        System.out.print(" <<< \n");
+
+                        System.out.print("Usar esta senha? (s/n): ");
+                        String respGen;
+
+                        try {
+                            respGen = context.scanner().nextLine();
+                        } catch (Exception e) {
+                            continue;
+                        }
+
+                        if (respGen.equalsIgnoreCase("s")) {
+                            break;
+                        }
+                    }
+                } else {
+                    password = inputPass;
+                }
+
                 notes = SecureInput.readChars("Descrição (opcional): ");
 
                 System.out.print("As credenciais estão corretas? (s/n)");
@@ -70,11 +125,11 @@ public class AddCommand implements Command {
                     try {
                         response = context.scanner().nextLine();
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        continue;
                     }
                 }
 
-                if(response.equalsIgnoreCase("s")){
+                if (response.equalsIgnoreCase("s")) {
                     break;
                 }
             }
