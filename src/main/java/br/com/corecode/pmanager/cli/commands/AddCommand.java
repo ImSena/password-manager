@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.IllegalFormatConversionException;
 
 import javax.crypto.SecretKey;
 
