@@ -7,7 +7,7 @@ import javax.crypto.SecretKey;
 import br.com.corecode.pmanager.domain.Vault;
 
 public class VaultSession {
-    private static final long TIMEOUT_MILLIS =   30 * 1000;
+    private static final long TIMEOUT_MILLIS =   2 * 60 * 1000;
     private SecretKey key;
     private Vault vault;
     private byte[] salt;

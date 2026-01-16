@@ -53,7 +53,7 @@ public class AddCommand implements Command {
                 if (user != null)
                     Arrays.fill(user, '\0');
 
-                System.out.println("\n Digite as credenciais \n");
+                System.out.println("\nDigite as credenciais \n");
 
                 idChar = SecureInput.readChars("ID: ");
                 id = new String(idChar);
@@ -78,7 +78,7 @@ public class AddCommand implements Command {
                             continue;
                         }
 
-                        if (length < 5 || length > 20) {
+                        if (length < 5 || length > 40) {
                             System.out.println("Tamanho de senha inválido \n");
                             continue;
                         }

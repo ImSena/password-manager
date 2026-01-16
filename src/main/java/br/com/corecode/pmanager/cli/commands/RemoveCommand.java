@@ -30,10 +30,10 @@ public class RemoveCommand implements Command {
                 return;
             }
 
-            System.out.print("Confirma remoção de '" + id + "'? (sim/não): ");
+            System.out.print("Confirma remoção de '" + id + "'? (s/n): ");
             String confirm = context.scanner().nextLine();
 
-            if (!"sim".equalsIgnoreCase(confirm)) {
+            if (!"s".equalsIgnoreCase(confirm)) {
                 System.out.println("Operação cancelada.");
                 return;
             }

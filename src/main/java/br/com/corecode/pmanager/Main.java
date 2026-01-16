@@ -1,5 +1,7 @@
 package br.com.corecode.pmanager;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Scanner;
 
@@ -17,22 +19,35 @@ import br.com.corecode.pmanager.storage.VaultFileRepository;
 public class Main {
     public static void main(String[] args) {
 
-        Scanner scanner = new Scanner(System.in);
-        VaultFileRepository repository = new VaultFileRepository();
-        Path vaultPath = Path.of("vault.pmv");
-        VaultSession session = new VaultSession();
+        try {
 
-        CommandContext context = new CommandContext(scanner, repository, vaultPath, args, session);
+            Scanner scanner = new Scanner(System.in);
+            VaultFileRepository repository = new VaultFileRepository();
 
-        CommandDispatcher dispatcher = new CommandDispatcher();
+            Path workDir = Path.of("vault");
 
-        dispatcher.register(new InitCommand());
-        dispatcher.register(new AddCommand());
-        dispatcher.register(new ListCommand());
-        dispatcher.register(new GetCommand());
-        dispatcher.register(new RemoveCommand());
+            if (!Files.exists(workDir)) {
+                Files.createDirectories(workDir);
+            }
 
-        Shell shell = new Shell(dispatcher, context, scanner);
-        shell.start();
+            Path vaultPath = workDir.resolve("vault.pmv");
+            VaultSession session = new VaultSession();
+
+            CommandContext context = new CommandContext(scanner, repository, vaultPath, args, session);
+
+            CommandDispatcher dispatcher = new CommandDispatcher();
+
+            dispatcher.register(new InitCommand());
+            dispatcher.register(new AddCommand());
+            dispatcher.register(new ListCommand());
+            dispatcher.register(new GetCommand());
+            dispatcher.register(new RemoveCommand());
+
+            Shell shell = new Shell(dispatcher, context, scanner);
+            shell.start();
+        } catch (IOException e) {
+            System.err.println("Erro fatal ao criar o diretório do cofre: "+e.getMessage());
+        }
+
     }
 }

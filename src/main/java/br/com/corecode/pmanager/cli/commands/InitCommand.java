@@ -1,5 +1,6 @@
 package br.com.corecode.pmanager.cli.commands;
 
+import java.io.Console;
 import java.nio.file.Files;
 import java.util.Arrays;
 
@@ -14,17 +15,15 @@ public class InitCommand implements Command {
 
     @Override
     public void execute(CommandContext context) {
+        Console console = System.console();
         try {
             if (Files.exists(context.vaultPath())) {
                 System.out.println("Cofre já existe");
                 return;
             }
 
-            System.out.println("Crie a senha mestra: ");
-            char[] p1 = context.scanner().nextLine().toCharArray();
-
-            System.out.println("Confirme a senha mestra: ");
-            char[] p2 = context.scanner().nextLine().toCharArray();
+            char[] p1 = console.readPassword("Crie a senha mestra: ");
+            char[] p2 = console.readPassword("Confirme a senha mestra: ");
 
             if (!Arrays.equals(p1, p2)) {
                 System.out.println("Senhas não conferem");

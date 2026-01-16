@@ -1,6 +1,7 @@
 package br.com.corecode.pmanager.cli;
 
 import java.io.Console;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +27,6 @@ public class CommandDispatcher {
             boolean unlocked = performAutoUnlock(context);
 
             if (!unlocked) {
-                System.out.println("Falha na autenticação. Comando cancelado.");
                 return;
             }
         }
@@ -35,6 +35,12 @@ public class CommandDispatcher {
     }
 
     private boolean performAutoUnlock(CommandContext context) {
+        if(!Files.exists(context.vaultPath())){
+            System.out.println("Cofre não encontrado");
+            System.out.println("Execute 'init' para criar um novo cofre");
+            return false;
+        }
+
         Console console = System.console();
 
         if (console == null) {
